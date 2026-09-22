@@ -778,6 +778,7 @@ function renderSyncCard() {
       S.setSync({ url, token, lastError: null });
       toast('Connected');
       await Sync.syncNow();
+      render();
     } catch (err) {
       toast(err.message || 'Could not connect');
       btn.disabled = false; btn.textContent = 'Connect';
@@ -800,11 +801,12 @@ function renderSyncCard() {
   const actions = [h('button', { class: 'btn btn-primary', type: 'submit', text: cfg.url ? 'Reconnect' : 'Connect' })];
   if (Sync.isConfigured()) {
     actions.push(h('button', { class: 'btn', type: 'button', text: 'Sync now',
-      onclick: async () => { await Sync.syncNow(); } }));
+      onclick: async () => { await Sync.syncNow(); render(); } }));
     actions.push(h('button', { class: 'btn btn-danger', type: 'button', text: 'Disconnect',
       onclick: () => {
         S.setSync({ url: '', token: '', cursor: 0, lastSyncedAt: null, lastError: null });
         toast('Disconnected — your data stays on this device');
+        render();
       } }));
   }
   form.appendChild(h('div', { class: 'btn-row' }, actions));
@@ -827,6 +829,8 @@ const VIEWS = { today: viewToday, program: viewProgram, progress: viewProgress, 
 let active = 'today';
 
 function render() {
+  renderPending = false;
+  clearTimeout(pendingTimer);
   const st = S.getState();
   const wk = S.currentWeek();
   const week = WEEKS.find((w) => w.n === wk);
@@ -872,7 +876,47 @@ $('#theme-toggle').addEventListener('click', () => {
 });
 
 // Any local change schedules a push; the status chip reflects what happened.
-S.subscribe(() => { render(); Sync.scheduleSync(); });
+// A background sync must never steal the field you are typing in, and must
+// never replace text you have not saved yet. Defer the re-render until focus
+// leaves the form.
+let renderPending = false;
+let pendingTimer = null;
+
+function isEditing() {
+  const el = document.activeElement;
+  return Boolean(el && el.closest('#main') && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName));
+}
+
+function requestRender() {
+  if (isEditing()) {
+    renderPending = true;
+    // Backstop: focusout is the usual trigger, but if it never arrives the
+    // view must still catch up rather than sit stale forever.
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(flushPendingRender, 4000);
+    return;
+  }
+  render();
+}
+
+function flushPendingRender() {
+  if (!renderPending) return;
+  if (isEditing()) {
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(flushPendingRender, 4000);
+    return;
+  }
+  render();
+}
+
+document.addEventListener('focusout', () => {
+  if (!renderPending) return;
+  // Focus may be moving to the next field in the same form — let it land first.
+  setTimeout(flushPendingRender, 0);
+});
+
+S.subscribe(() => { requestRender(); Sync.scheduleSync(); });
+S.subscribeSync(() => renderSyncChip());
 Sync.onStatus(() => renderSyncChip());
 
 function renderSyncChip() {

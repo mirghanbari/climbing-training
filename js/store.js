@@ -38,7 +38,11 @@ const DEFAULT_SYNC = { url: '', token: '', cursor: 0, lastSyncedAt: null, lastEr
 
 let state = load();
 let sync = loadSync();
+// Two channels on purpose. Sync config/status changes must NOT look like data
+// changes: the data listener schedules a sync, so sharing one channel makes
+// every sync trigger the next one, forever.
 const listeners = new Set();
+const syncListeners = new Set();
 
 function load() {
   try {
@@ -106,12 +110,18 @@ function persistSync() {
   } catch (err) {
     console.error('[training] could not save sync config', err);
   }
-  listeners.forEach((fn) => fn(state));
+  syncListeners.forEach((fn) => fn(sync));
 }
 
 export function subscribe(fn) {
   listeners.add(fn);
   return () => listeners.delete(fn);
+}
+
+/** Sync config/status only — never schedule a sync from this. */
+export function subscribeSync(fn) {
+  syncListeners.add(fn);
+  return () => syncListeners.delete(fn);
 }
 
 export function getState() {
@@ -360,7 +370,9 @@ export function applyChanges(changes) {
   state.tests.sort(byDateAsc);
   state.sends.sort(byDateDesc);
   state.sessions.sort((a, b) => (a.week - b.week) || (a.day - b.day));
-  persist();
+  // Only notify when something actually landed. A sync echoes our own records
+  // back; persisting on that would schedule another sync, and another.
+  if (applied) persist();
   return applied;
 }
 
