@@ -1,3 +1,6 @@
 .DS_Store
 node_modules/
 *.local.json
+server/node_modules/
+server/.wrangler/
+.dev.vars

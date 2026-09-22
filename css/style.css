@@ -305,3 +305,20 @@ details.data-table summary {
   .tile-value { font-size: 23px; }
   .card { padding: 14px; }
 }
+
+/* ---------- sync ---------- */
+.topbar-actions { display: flex; align-items: center; gap: 10px; flex: none; }
+
+.sync-chip {
+  font-size: 11.5px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-secondary);
+  white-space: nowrap;
+}
+.sync-chip.is-ok { color: var(--good); border-color: color-mix(in srgb, var(--good) 35%, var(--border)); }
+.sync-chip.is-error { color: var(--critical); border-color: color-mix(in srgb, var(--critical) 40%, var(--border)); }
+.sync-chip.is-syncing { color: var(--text-muted); }
+
+@media (max-width: 460px) {
+  .sync-chip { font-size: 11px; padding: 4px 8px; }
+  .brand h1 { font-size: 16px; }
+}

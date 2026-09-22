@@ -1,0 +1,18 @@
+{
+  "name": "climbing-training-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "migrate:local": "wrangler d1 migrations apply climbing-training --local",
+    "migrate": "wrangler d1 migrations apply climbing-training --remote",
+    "issue-token": "node scripts/issue-token.mjs",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "wrangler": "^3.99.0"
+  }
+}

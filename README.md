@@ -43,12 +43,15 @@ carries its own tested max.
 
 ## Your data
 
-Everything is stored in your browser's `localStorage` on the device you use.
-Nothing is uploaded, and there is no backend — this repo is only the app. Two
-consequences worth knowing:
+`localStorage` on each device is the source of truth, so the app works with no
+signal. Clearing site data wipes that device — **export JSON from the Setup tab
+now and then.**
 
-- Clearing site data wipes your log. **Export JSON from the Setup tab now and then.**
-- Data does not sync between your phone and your laptop. Export and import to move it.
+Optionally, `server/` is a Cloudflare Worker + D1 database that syncs your phone
+and laptop. It is off until you connect it, and the app is fully usable without
+it. See [server/README.md](server/README.md). Conflicts resolve last-write-wins
+on each record; the device token lives only in that browser and is deliberately
+excluded from JSON exports.
 
 ## Running it
 

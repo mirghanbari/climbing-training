@@ -1,6 +1,7 @@
 import { DEVICES, DEVICE_ORDER, WEEKS, SESSIONS, RULES, GRADES, STYLES, pctFor } from './program.js';
 import * as S from './store.js';
 import { lineChart, barChart } from './charts.js';
+import * as Sync from './sync.js';
 
 /* ---------- helpers ---------- */
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -245,7 +246,7 @@ function viewToday(host) {
     ]));
   }
 
-  if (!st.tests.length || !st.settings.bodyweightLb) {
+  if (!S.liveTests().length || !st.settings.bodyweightLb) {
     host.appendChild(h('div', { class: 'card' }, [
       h('p', { class: 'eyebrow', text: 'Start here' }),
       h('h2', { text: 'Set your numbers' }),
@@ -311,7 +312,7 @@ function renderStatTiles() {
     ]));
   });
 
-  const done = st.sessions.length;
+  const done = S.liveSessions().length;
   tiles.appendChild(h('div', { class: 'tile' }, [
     h('div', { class: 'tile-label', text: 'Sessions logged' }),
     h('div', { class: 'tile-value', text: `${done}/24` }),
@@ -447,7 +448,7 @@ function viewProgress(host) {
     id,
     label: DEVICES[id].short,
     color: colors[i],
-    points: st.tests.filter((t) => t.device === id).map((t) => ({
+    points: S.liveTests().filter((t) => t.device === id).map((t) => ({
       x: t.date,
       y: progressUnit === 'lb' ? t.valueLb
         : Math.round(S.pctBw(t.valueLb, t.bodyweightLb) * 10) / 10
@@ -455,7 +456,7 @@ function viewProgress(host) {
   }));
 
   const refLines = ['grippul', 'block10']
-    .filter((id) => st.tests.some((t) => t.device === id))
+    .filter((id) => S.liveTests().some((t) => t.device === id))
     .map((id, i) => ({
       y: progressUnit === 'lb' ? S.targetLb(id) : DEVICES[id].targetPctBw,
       label: `${DEVICES[id].short} target`,
@@ -470,13 +471,13 @@ function viewProgress(host) {
   chartCard.appendChild(h('p', { class: 'card-sub', style: 'margin-top:10px',
     text: 'Targets are Beastfingers benchmarks — a reference point, not a validated predictor of redpoint grade.' }));
 
-  if (st.tests.length) {
+  if (S.liveTests().length) {
     const t = h('table', {}, [
       h('thead', {}, h('tr', {}, [
         h('th', { text: 'Date' }), h('th', { text: 'Device' }),
         h('th', { text: 'Load' }), h('th', { text: '% BW' }), h('th', { text: '' })
       ])),
-      h('tbody', {}, [...st.tests].reverse().map((t2) => h('tr', {}, [
+      h('tbody', {}, [...S.liveTests()].reverse().map((t2) => h('tr', {}, [
         h('td', { text: S.fmtShort(t2.date) }),
         h('td', { class: 'is-primary', text: DEVICES[t2.device]?.short || t2.device }),
         h('td', { text: `${t2.valueLb} lb` }),
@@ -486,7 +487,7 @@ function viewProgress(host) {
       ])))
     ]);
     chartCard.appendChild(h('details', { class: 'data-table' }, [
-      h('summary', { text: `All tests (${st.tests.length})` }),
+      h('summary', { text: `All tests (${S.liveTests().length})` }),
       h('div', { class: 'table-wrap' }, t)
     ]));
   }
@@ -498,8 +499,8 @@ function viewProgress(host) {
   });
 
   // --- logged sessions ---
-  if (st.sessions.length) {
-    const rows = [...st.sessions].reverse().map((s) => {
+  if (S.liveSessions().length) {
+    const rows = [...S.liveSessions()].reverse().map((s) => {
       const tpl = SESSIONS.find((x) => x.day === s.day);
       return h('tr', {}, [
         h('td', { text: S.fmtShort(s.date) }),
@@ -526,7 +527,7 @@ function viewSends(host) {
   host.textContent = '';
   const st = S.getState();
 
-  const hardest = st.sends.filter((s) => s.style !== 'Attempt')
+  const hardest = S.liveSends().filter((s) => s.style !== 'Attempt')
     .map((s) => GRADES.indexOf(s.grade)).filter((i) => i >= 0).sort((a, b) => b - a)[0];
 
   host.appendChild(h('div', { class: 'tiles' }, [
@@ -537,8 +538,8 @@ function viewSends(host) {
     ]),
     h('div', { class: 'tile' }, [
       h('div', { class: 'tile-label', text: 'Sends logged' }),
-      h('div', { class: 'tile-value', text: String(st.sends.filter((s) => s.style !== 'Attempt').length) }),
-      h('div', { class: 'tile-meta', text: `${st.sends.filter((s) => s.style === 'Attempt').length} attempts` })
+      h('div', { class: 'tile-value', text: String(S.liveSends().filter((s) => s.style !== 'Attempt').length) }),
+      h('div', { class: 'tile-meta', text: `${S.liveSends().filter((s) => s.style === 'Attempt').length} attempts` })
     ])
   ]));
 
@@ -592,7 +593,7 @@ function viewSends(host) {
 
   // pyramid
   const counts = new Map();
-  st.sends.filter((s) => s.style !== 'Attempt').forEach((s) => {
+  S.liveSends().filter((s) => s.style !== 'Attempt').forEach((s) => {
     counts.set(s.grade, (counts.get(s.grade) || 0) + 1);
   });
   const firstIdx = GRADES.indexOf('5.11a');
@@ -610,7 +611,7 @@ function viewSends(host) {
   host.appendChild(pyCard);
   barChart(pyHost, { rows, emptyText: 'No sends logged yet.', formatV: (v) => v ? String(v) : '' });
 
-  if (st.sends.length) {
+  if (S.liveSends().length) {
     host.appendChild(h('div', { class: 'card' }, [
       h('h2', { text: 'Send log' }),
       h('div', { class: 'table-wrap' }, h('table', {}, [
@@ -618,7 +619,7 @@ function viewSends(host) {
           h('th', { text: 'Date' }), h('th', { text: 'Route' }), h('th', { text: 'Grade' }),
           h('th', { text: 'Style' }), h('th', { text: 'Crag' }), h('th', { text: '' })
         ])),
-        h('tbody', {}, st.sends.map((s) => h('tr', {}, [
+        h('tbody', {}, S.liveSends().map((s) => h('tr', {}, [
           h('td', { text: S.fmtShort(s.date) }),
           h('td', { class: 'is-primary', text: s.name }),
           h('td', { text: s.grade }),
@@ -639,14 +640,13 @@ function viewSetup(host) {
   const form = h('form', { class: 'card', onsubmit: (e) => {
     e.preventDefault();
     const fd = new FormData(form);
-    S.update((s) => {
-      s.settings.bodyweightLb = Number(fd.get('bw')) || s.settings.bodyweightLb;
-      s.settings.startDate = fd.get('start');
-      s.settings.tripName = fd.get('tripName');
-      s.settings.tripDate = fd.get('tripDate') || null;
-      s.settings.targets.grippul = Number(fd.get('tGrippul'));
-      s.settings.targets.block10 = Number(fd.get('tBlock'));
-      return s;
+    S.updateSettings((set) => {
+      set.bodyweightLb = Number(fd.get('bw')) || set.bodyweightLb;
+      set.startDate = fd.get('start');
+      set.tripName = fd.get('tripName');
+      set.tripDate = fd.get('tripDate') || null;
+      set.targets.grippul = Number(fd.get('tGrippul'));
+      set.targets.block10 = Number(fd.get('tBlock'));
     });
     toast('Saved');
   } });
@@ -696,11 +696,15 @@ function viewSetup(host) {
     ]));
   });
 
+  host.appendChild(renderSyncCard());
+
   // data management
   const data = h('div', { class: 'card' }, [
     h('h2', { text: 'Your data' }),
     h('p', { class: 'card-sub',
-      text: 'Everything is stored in this browser only — nothing is uploaded anywhere. Clearing site data wipes it, so export now and then.' })
+      text: Sync.isConfigured()
+        ? 'Saved in this browser and synced to your own Cloudflare Worker — nowhere else. Clearing site data wipes this device, but a sync restores it.'
+        : 'Stored in this browser only — nothing is uploaded anywhere. Clearing site data wipes it, so export now and then.' })
   ]);
   const fileInput = h('input', { type: 'file', accept: 'application/json', style: 'display:none',
     onchange: async (e) => {
@@ -741,6 +745,80 @@ function viewSetup(host) {
     } });
   data.appendChild(h('div', { class: 'btn-row' }, [resetBtn]));
   host.appendChild(data);
+}
+
+function renderSyncCard() {
+  const cfg = S.getSync();
+  const st = Sync.getStatus();
+  const card = h('div', { class: 'card' });
+
+  const pillClass = st.status === 'ok' ? 'is-done' : st.status === 'error' ? 'is-peak' : '';
+  const pillText = st.status === 'off' ? 'not connected'
+    : st.status === 'syncing' ? 'syncing…'
+    : st.status === 'error' ? 'error'
+    : 'connected';
+
+  card.appendChild(h('div', { class: 'card-head' }, [
+    h('h2', { text: 'Sync across devices' }),
+    h('span', { class: `pill ${pillClass}`, text: pillText })
+  ]));
+  card.appendChild(h('p', { class: 'card-sub',
+    text: 'Optional. Your log is saved on this device either way — this keeps your phone and laptop in step. Issue a token per device from the server project.' }));
+
+  const form = h('form', { onsubmit: async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const url = String(fd.get('url') || '').trim();
+    const token = String(fd.get('token') || '').trim();
+    if (!url || !token) { toast('Need both a URL and a token'); return; }
+    const btn = $('[type=submit]', form);
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+      await Sync.testConnection(url, token);
+      S.setSync({ url, token, lastError: null });
+      toast('Connected');
+      await Sync.syncNow();
+    } catch (err) {
+      toast(err.message || 'Could not connect');
+      btn.disabled = false; btn.textContent = 'Connect';
+    }
+  } });
+
+  form.appendChild(h('div', { class: 'field' }, [
+    h('label', { for: 'sync-url', text: 'Worker URL' }),
+    h('input', { type: 'url', id: 'sync-url', name: 'url', value: cfg.url || '',
+      placeholder: 'https://climbing-training-sync.<you>.workers.dev', autocomplete: 'off' })
+  ]));
+  form.appendChild(h('div', { class: 'field' }, [
+    h('label', { for: 'sync-token', text: 'Device token' }),
+    h('input', { type: 'password', id: 'sync-token', name: 'token', value: cfg.token || '',
+      placeholder: 'ct_…', autocomplete: 'off', spellcheck: 'false' }),
+    h('p', { class: 'field-hint',
+      text: 'Stored only in this browser, and deliberately left out of JSON exports.' })
+  ]));
+
+  const actions = [h('button', { class: 'btn btn-primary', type: 'submit', text: cfg.url ? 'Reconnect' : 'Connect' })];
+  if (Sync.isConfigured()) {
+    actions.push(h('button', { class: 'btn', type: 'button', text: 'Sync now',
+      onclick: async () => { await Sync.syncNow(); } }));
+    actions.push(h('button', { class: 'btn btn-danger', type: 'button', text: 'Disconnect',
+      onclick: () => {
+        S.setSync({ url: '', token: '', cursor: 0, lastSyncedAt: null, lastError: null });
+        toast('Disconnected — your data stays on this device');
+      } }));
+  }
+  form.appendChild(h('div', { class: 'btn-row' }, actions));
+  card.appendChild(form);
+
+  if (st.message) {
+    card.appendChild(h('p', { class: `note${st.status === 'error' ? ' is-critical' : ''}`, text: st.message }));
+  }
+  if (cfg.lastSyncedAt) {
+    const mins = Math.round((Date.now() - cfg.lastSyncedAt) / 60000);
+    card.appendChild(h('p', { class: 'field-hint',
+      text: `Last synced ${mins < 1 ? 'just now' : mins === 1 ? '1 minute ago' : `${mins} minutes ago`}.` }));
+  }
+  return card;
 }
 
 /* ---------- shell ---------- */
@@ -793,9 +871,26 @@ $('#theme-toggle').addEventListener('click', () => {
   render();
 });
 
-S.subscribe(() => render());
+// Any local change schedules a push; the status chip reflects what happened.
+S.subscribe(() => { render(); Sync.scheduleSync(); });
+Sync.onStatus(() => renderSyncChip());
+
+function renderSyncChip() {
+  const chip = $('#sync-chip');
+  if (!chip) return;
+  const st = Sync.getStatus();
+  chip.hidden = st.status === 'off';
+  chip.className = `sync-chip is-${st.status}`;
+  chip.textContent = st.status === 'syncing' ? 'Syncing…'
+    : st.status === 'error' ? 'Sync failed'
+    : st.status === 'ok' ? 'Synced'
+    : '';
+  chip.title = st.message || '';
+}
 
 const initial = location.hash.slice(1);
 if (VIEWS[initial]) active = initial;
 
 render();
+renderSyncChip();
+Sync.start();
