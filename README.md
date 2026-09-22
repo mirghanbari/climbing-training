@@ -6,6 +6,9 @@ build step, no server, no account — open it, enter your numbers, train.
 It replaces a spreadsheet with something usable one-handed on a phone between
 sets.
 
+Engineering notes, invariants and a session log live in [NOTES.md](NOTES.md).
+Read the invariants before changing anything.
+
 ## The idea
 
 Every prescribed load is a **percentage of a tested max**, never a fixed number.
