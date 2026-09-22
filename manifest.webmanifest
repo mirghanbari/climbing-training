@@ -1,0 +1,14 @@
+{
+  "name": "Finger Strength Block",
+  "short_name": "Fingers",
+  "description": "8-week finger strength block with loads priced off tested maxes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a19",
+  "theme_color": "#1a1a19",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

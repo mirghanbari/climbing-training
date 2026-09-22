@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finger Strength Block</title>
+<meta name="description" content="8-week finger strength block — Grippūl, Tension Block and Overcome loads priced off tested maxes.">
+<meta name="theme-color" content="#1a1a19">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>Finger Strength Block</h1>
+        <p class="brand-sub" id="phase-strip">—</p>
+      </div>
+    </div>
+    <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch theme">
+      <span data-theme-icon>◐</span>
+    </button>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Sections">
+  <button class="tab is-active" data-view="today" type="button">Today</button>
+  <button class="tab" data-view="program" type="button">Program</button>
+  <button class="tab" data-view="progress" type="button">Progress</button>
+  <button class="tab" data-view="sends" type="button">Sends</button>
+  <button class="tab" data-view="setup" type="button">Setup</button>
+</nav>
+
+<main id="main">
+  <section class="view" data-view="today" id="view-today"></section>
+  <section class="view" data-view="program" id="view-program" hidden></section>
+  <section class="view" data-view="progress" id="view-progress" hidden></section>
+  <section class="view" data-view="sends" id="view-sends" hidden></section>
+  <section class="view" data-view="setup" id="view-setup" hidden></section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

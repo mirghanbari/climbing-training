@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Finger strength">
+  <rect width="512" height="512" rx="112" fill="#1a1a19"/>
+  <g fill="none" stroke="#3987e5" stroke-width="34" stroke-linecap="round">
+    <path d="M150 300V190"/>
+    <path d="M214 300V160"/>
+    <path d="M278 300V172"/>
+    <path d="M342 300V208"/>
+  </g>
+  <rect x="118" y="300" width="276" height="58" rx="26" fill="#d95926"/>
+</svg>
