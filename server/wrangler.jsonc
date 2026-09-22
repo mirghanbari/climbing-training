@@ -15,7 +15,7 @@
     {
       "binding": "DB",
       "database_name": "climbing-training",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "d0f6acc9-6e03-44be-a115-6676f804e5fd",
       "migrations_dir": "migrations"
     }
   ]
