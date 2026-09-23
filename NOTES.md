@@ -158,6 +158,10 @@ matching the workbook exactly.
   on a client `updatedAt`, tombstones for deletes, hashed per-device tokens.
   Every table carries `user_id` so multi-user is an auth change, not a migration.
 - Moved off Wrangler 3 (EOL) to 4.
+- `NOTES.md` (this file) and `CLAUDE.md`. The latter auto-loads into Claude Code
+  sessions so the invariants are enforced rather than merely available; it
+  deliberately repeats only the rules that cause damage when broken, and points
+  here for the rest, so the two do not drift into contradicting each other.
 
 **Decisions.**
 - *GitHub Pages over Cloudflare Pages* for the front end — `gh` was already
